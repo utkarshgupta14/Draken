@@ -3,7 +3,10 @@ import sys
 import random
 import math
 
-from scripts.entities import Entity, Ship, Bullet
+from scripts.entities import Entity
+from scripts.ship import Ship
+from scripts.bullets import Bullet
+from scripts.astroids import Astroid
 from scripts.utils import *
 
 class Game:
@@ -23,16 +26,28 @@ class Game:
         self.assets = {
             'ship' : load_image('ship.png'),
             'bullet' : load_image('bullet.png'),
+            'obstacles/astroids' : load_images('obstacles/astroids'),
         }
 
         self.ship = Ship(self, (304, 300))
 
         self.bullets = []
+        self.obstacles = []
 
     def run(self):
         while True:
             # render background
             self.display.fill((0, 0, 0))
+
+            # spawn astroids
+            if random.random() * len(self.obstacles) < 0.03:
+                self.obstacles.append(Astroid(self, (random.random()*640, -100), velocity=(0, random.random()+1), variant=random.randint(0, 3)))
+            # update and render obstacles
+            for obstacle in self.obstacles.copy():
+                kill = obstacle.update()
+                if kill:
+                    self.obstacles.remove(obstacle)
+                obstacle.render(self.display)
 
             # render player
             self.ship.update((self.movement[1]-self.movement[0], self.movement[3]-self.movement[2]))
